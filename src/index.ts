@@ -1,0 +1,1 @@
+console.log("Puzzle Inlay game initialized");
