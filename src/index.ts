@@ -7,9 +7,15 @@ class Game {
     private gameState: GameState;
     private renderer: Renderer;
     private canvas: HTMLCanvasElement;
+    private uiOverlay: HTMLElement;
+    private startButton: HTMLButtonElement;
+    private restartButton: HTMLButtonElement;
 
     constructor(canvasId: string, fileContent: string) {
         this.canvas = document.getElementById(canvasId) as HTMLCanvasElement;
+        this.uiOverlay = document.getElementById('uiOverlay') as HTMLElement;
+        this.startButton = document.getElementById('startButton') as HTMLButtonElement;
+        this.restartButton = document.getElementById('restartButton') as HTMLButtonElement;
         
         const initialGrid: Grid = parseBoardFromFile(fileContent);
         const pieces: Piece[] = parsePiecesFromFile(fileContent);
@@ -23,11 +29,12 @@ class Game {
         this.renderer = new Renderer(this.canvas);
 
         this.setupEventListeners();
-        this.startGame();
     }
 
     private setupEventListeners(): void {
         document.addEventListener('keydown', (e) => this.handleKeyPress(e));
+        this.startButton.addEventListener('click', () => this.startGame());
+        this.restartButton.addEventListener('click', () => this.restartGame());
     }
 
     private handleKeyPress(e: KeyboardEvent): void {
@@ -53,19 +60,15 @@ class Game {
         this.render();
     }
 
-    private placePiece(): void {
-        if (this.gameState.placePiece()) {
-            this.gameState.setCurrentPiece(this.gameState.getNextPiece()!);
-            this.gameState.setNextPiece(this.gameState.getRandomPiece());
-            this.gameState.setCurrentPiecePosition(0, 0);
-        }
+    private startGame(): void {
+        this.uiOverlay.style.display = 'none';
+        this.gameState.reset();
+        this.gameLoop();
     }
 
-    private startGame(): void {
-        this.gameState.setCurrentPiece(this.gameState.getRandomPiece());
-        this.gameState.setNextPiece(this.gameState.getRandomPiece());
-        this.gameState.setCurrentPiecePosition(0, 0);
-        this.render();
+    private restartGame(): void {
+        this.gameState.reset();
+        this.restartButton.style.display = 'none';
         this.gameLoop();
     }
 
@@ -80,13 +83,20 @@ class Game {
             this.placePiece();
         }
         this.render();
-        setTimeout(() => this.gameLoop(), 1000); // Move down every second
+        requestAnimationFrame(() => this.gameLoop());
     }
 
     private handleGameOver(): void {
-        console.log('Game Over!');
-        // You can add more game over handling here, like showing a message on the canvas
+        this.restartButton.style.display = 'block';
         this.renderer.renderGameOver();
+    }
+
+    private placePiece(): void {
+        if (this.gameState.placePiece()) {
+            this.gameState.setCurrentPiece(this.gameState.getNextPiece()!);
+            this.gameState.setNextPiece(this.gameState.getRandomPiece());
+            this.gameState.setCurrentPiecePosition(0, 0);
+        }
     }
 
     private render(): void {

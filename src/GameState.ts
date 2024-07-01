@@ -17,6 +17,20 @@ export class GameState {
         this.isGameOver = false;
     }
 
+    public reset(): void {
+        this.grid = this.createEmptyGrid();
+        this.currentPiece = null;
+        this.nextPiece = null;
+        this.currentPiecePosition = { x: 0, y: 0 };
+        this.isGameOver = false;
+    }
+
+    private createEmptyGrid(): Grid {
+        return Array(this.grid.length).fill(null).map(() => 
+            Array(this.grid[0].length).fill(0)
+        );
+    }
+
     public getGrid(): Grid {
         return this.grid;
     }

@@ -1,5 +1,6 @@
 const path = require('path');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
+const CopyWebpackPlugin = require('copy-webpack-plugin');
 
 module.exports = {
   entry: './src/index.ts',
@@ -9,6 +10,10 @@ module.exports = {
         test: /\.tsx?$/,
         use: 'ts-loader',
         exclude: /node_modules/,
+      },
+      {
+        test: /\.txt$/,
+        type: 'asset/source',
       },
     ],
   },
@@ -22,6 +27,11 @@ module.exports = {
   plugins: [
     new HtmlWebpackPlugin({
       template: 'src/index.html',
+    }),
+    new CopyWebpackPlugin({
+      patterns: [
+        { from: 'src/cat.txt', to: 'cat.txt' },
+      ],
     }),
   ],
   devServer: {

@@ -37,9 +37,9 @@ export class Renderer {
         for (let y = 0; y < grid.length; y++) {
             for (let x = 0; x < grid[y].length; x++) {
                 if (grid[y][x] === 1) {
-                    this.drawTriangle(x, y, 'blue');
+                    this.drawRectangle(x, y, 'gray');
                 } else {
-                    this.drawTriangle(x, y, 'lightgray', true);
+                    this.drawRectangle(x, y, 'lightgray', true);
                 }
             }
         }
@@ -51,7 +51,7 @@ export class Renderer {
         for (let y = 0; y < piece.length; y++) {
             for (let x = 0; x < piece[y].length; x++) {
                 if (piece[y][x] === 1) {
-                    this.drawTriangle(position.x + x, position.y + y, 'red');
+                    this.drawRectangle(position.x + x, position.y + y, 'blue');
                 }
             }
         }
@@ -70,10 +70,10 @@ export class Renderer {
         for (let y = 0; y < piece.length; y++) {
             for (let x = 0; x < piece[y].length; x++) {
                 if (piece[y][x] === 1) {
-                    this.drawTriangle(
+                    this.drawRectangle(
                         (startX / this.cellSize) + x,
                         (startY / this.cellSize) + y,
-                        'purple',
+                        'blue',
                         false,
                         this.cellSize / 2
                     );
@@ -82,31 +82,16 @@ export class Renderer {
         }
     }
 
-    private drawTriangle(x: number, y: number, color: string, outline: boolean = false, size: number = this.cellSize): void {
-        const centerX = x * size + size / 2;
-        const centerY = y * size + size / 2;
-        const direction = (x + y) % 2 === 0 ? 1 : -1; // Alternate direction
-
-        this.ctx.fillStyle = color;
-        this.ctx.beginPath();
-        if (direction === 1) {
-            // Pointing up
-            this.ctx.moveTo(centerX, centerY - size / 2);
-            this.ctx.lineTo(centerX - size / 2, centerY + size / 2);
-            this.ctx.lineTo(centerX + size / 2, centerY + size / 2);
-        } else {
-            // Pointing down
-            this.ctx.moveTo(centerX, centerY + size / 2);
-            this.ctx.lineTo(centerX - size / 2, centerY - size / 2);
-            this.ctx.lineTo(centerX + size / 2, centerY - size / 2);
-        }
-        this.ctx.closePath();
+    private drawRectangle(x: number, y: number, color: string, outline: boolean = false, size: number = this.cellSize): void {
+        const rectX = x * size;
+        const rectY = y * size;
 
         if (outline) {
             this.ctx.strokeStyle = color;
-            this.ctx.stroke();
+            this.ctx.strokeRect(rectX, rectY, size, size);
         } else {
-            this.ctx.fill();
+            this.ctx.fillStyle = color;
+            this.ctx.fillRect(rectX, rectY, size, size);
         }
     }
 }
