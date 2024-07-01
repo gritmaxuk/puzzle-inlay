@@ -2,12 +2,14 @@ import { Grid, Piece } from './types';
 
 export class GameState {
     private grid: Grid;
+    private pieces: Piece[];
     private currentPiece: Piece | null;
     private nextPiece: Piece | null;
     private currentPiecePosition: { x: number, y: number };
 
-    constructor(initialGrid: Grid) {
+    constructor(initialGrid: Grid, pieces: Piece[]) {
         this.grid = initialGrid;
+        this.pieces = pieces;
         this.currentPiece = null;
         this.nextPiece = null;
         this.currentPiecePosition = { x: 0, y: 0 };
@@ -25,6 +27,10 @@ export class GameState {
         return this.nextPiece;
     }
 
+    public setNextPiece(piece: Piece): void {
+        this.nextPiece = piece;
+    }
+
     public getCurrentPiecePosition(): { x: number, y: number } {
         return this.currentPiecePosition;
     }
@@ -33,12 +39,12 @@ export class GameState {
         this.currentPiece = piece;
     }
 
-    public setNextPiece(piece: Piece): void {
-        this.nextPiece = piece;
-    }
-
     public setCurrentPiecePosition(x: number, y: number): void {
         this.currentPiecePosition = { x, y };
+    }
+
+    public getRandomPiece(): Piece {
+        return this.pieces[Math.floor(Math.random() * this.pieces.length)];
     }
 
     public movePiece(dx: number, dy: number): boolean {

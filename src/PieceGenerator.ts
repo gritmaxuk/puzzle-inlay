@@ -8,7 +8,6 @@ export class PieceGenerator {
     }
 
     public getRandomPiece(): Piece {
-        const index = Math.floor(Math.random() * this.pieces.length);
-        return this.pieces[index];
+        return this.pieces[Math.floor(Math.random() * this.pieces.length)];
     }
 }
