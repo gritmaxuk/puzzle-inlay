@@ -14,7 +14,7 @@ export class Renderer {
         this.smallCtx = smallCanvas.getContext('2d')!;
     }
 
-    render(gameState: GameState) {
+    render(gameState: GameState, draggingPiece?: Piece, dragOffset?: { x: number, y: number }) {
         this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
 
         const grid = gameState.getGrid();
@@ -32,6 +32,10 @@ export class Renderer {
         });
 
         this.renderSmallBoard(gameState.getNextPiece()!);
+
+        if (draggingPiece && dragOffset) {
+            this.renderDraggingPiece(draggingPiece, dragOffset);
+        }
     }
 
     private renderSmallBoard(piece: Piece) {
@@ -46,6 +50,22 @@ export class Renderer {
                 this.smallCtx.strokeStyle = '#000000';
                 this.smallCtx.lineWidth = 2;
                 this.smallCtx.strokeRect(x * 30, y * 30, 30, 30);
+            });
+        });
+    }
+
+    private renderDraggingPiece(piece: Piece, offset: { x: number, y: number }) {
+        piece.forEach((row, y) => {
+            row.forEach((cell, x) => {
+                if (cell === 1) {
+                    this.ctx.fillStyle = '#FF0000'; // Red for dragging piece
+                    this.ctx.fillRect(offset.x + x * 30, offset.y + y * 30, 30, 30);
+
+                    // Draw border
+                    this.ctx.strokeStyle = '#000000';
+                    this.ctx.lineWidth = 2;
+                    this.ctx.strokeRect(offset.x + x * 30, offset.y + y * 30, 30, 30);
+                }
             });
         });
     }
