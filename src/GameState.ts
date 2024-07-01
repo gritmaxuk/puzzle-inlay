@@ -6,29 +6,24 @@ export class GameState {
     private currentPiece: Piece | null;
     private nextPiece: Piece | null;
     private currentPiecePosition: { x: number, y: number };
-    private isGameOver: boolean;
 
     constructor(initialGrid: Grid, pieces: Piece[]) {
-        this.grid = initialGrid;
+        this.grid = this.createGridFromShape(initialGrid);
         this.pieces = pieces;
         this.currentPiece = null;
         this.nextPiece = null;
         this.currentPiecePosition = { x: 0, y: 0 };
-        this.isGameOver = false;
     }
 
     public reset(): void {
-        this.grid = this.createEmptyGrid();
-        this.currentPiece = null;
-        this.nextPiece = null;
+        this.grid = this.createGridFromShape(this.grid);
+        this.currentPiece = this.getRandomPiece();
+        this.nextPiece = this.getRandomPiece();
         this.currentPiecePosition = { x: 0, y: 0 };
-        this.isGameOver = false;
     }
 
-    private createEmptyGrid(): Grid {
-        return Array(this.grid.length).fill(null).map(() => 
-            Array(this.grid[0].length).fill(0)
-        );
+    private createGridFromShape(shape: Grid): Grid {
+        return shape.map(row => row.slice());
     }
 
     public getGrid(): Grid {
@@ -76,29 +71,10 @@ export class GameState {
 
     public rotatePiece(): void {
         if (!this.currentPiece) return;
-
-        const rotated = this.rotateMatrix(this.currentPiece);
-        if (this.canPlacePiece(this.currentPiecePosition.x, this.currentPiecePosition.y, rotated)) {
-            this.currentPiece = rotated;
+        const rotatedPiece = this.rotateMatrix(this.currentPiece);
+        if (this.canPlacePiece(this.currentPiecePosition.x, this.currentPiecePosition.y, rotatedPiece)) {
+            this.currentPiece = rotatedPiece;
         }
-    }
-
-    public isOver(): boolean {
-        return this.isGameOver;
-    }
-
-    public checkGameOver(): void {
-        if (!this.currentPiece) return;
-
-        // Check if the current piece can be placed at the top of the grid
-        for (let x = 0; x <= this.grid[0].length - this.currentPiece[0].length; x++) {
-            if (this.canPlacePiece(x, 0)) {
-                return; // If the piece can be placed, the game is not over
-            }
-        }
-
-        // If we can't place the current piece at the top, the game is over
-        this.isGameOver = true;
     }
 
     public placePiece(): boolean {
@@ -114,7 +90,6 @@ export class GameState {
                     }
                 }
             }
-            this.checkGameOver(); // Check for game over after placing a piece
             return true;
         }
         return false;
@@ -128,19 +103,12 @@ export class GameState {
                 if (piece[i][j] === 1) {
                     const gridY = y + i;
                     const gridX = x + j;
-                    
-                    // Check if out of bounds
+
                     if (gridY < 0 || gridY >= this.grid.length || gridX < 0 || gridX >= this.grid[0].length) {
                         return false;
                     }
-                    
-                    // Check if cell is already occupied
+
                     if (this.grid[gridY][gridX] === 1) {
-                        return false;
-                    }
-                    
-                    // Check if the triangle orientation matches
-                    if ((gridX + gridY) % 2 !== (x + y) % 2) {
                         return false;
                     }
                 }
@@ -151,7 +119,7 @@ export class GameState {
 
     private rotateMatrix(matrix: Piece): Piece {
         const N = matrix.length;
-        const rotated = matrix.map((row, i) => 
+        const rotated = matrix.map((row, i) =>
             row.map((val, j) => matrix[N - 1 - j][i])
         );
         return rotated;

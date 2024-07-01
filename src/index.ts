@@ -1,45 +1,37 @@
 import { GameState } from './GameState';
 import { Renderer } from './Renderer';
-import { Grid, Piece } from './types';
-import { parseBoard, parsePieces } from './BoardParser';
+import { CAT_SHAPE, PIECE_VARIANTS } from './gameData';
 
 class Game {
     private gameState: GameState;
     private renderer: Renderer;
     private canvas: HTMLCanvasElement;
     private uiOverlay: HTMLElement;
-    private startButton: HTMLButtonElement;
     private restartButton: HTMLButtonElement;
 
     constructor(canvasId: string) {
         this.canvas = document.getElementById(canvasId) as HTMLCanvasElement;
         this.uiOverlay = document.getElementById('uiOverlay') as HTMLElement;
-        this.startButton = document.getElementById('startButton') as HTMLButtonElement;
         this.restartButton = document.getElementById('restartButton') as HTMLButtonElement;
-        
-        const initialGrid: Grid = parseBoard();
-        const pieces: Piece[] = parsePieces();
 
         // Set canvas size based on grid dimensions
-        const cellSize = 40; // Should match the cellSize in Renderer
-        this.canvas.width = initialGrid[0].length * cellSize;
-        this.canvas.height = initialGrid.length * cellSize;
+        const cellSize = 30; // Size of each cell
+        this.canvas.width = CAT_SHAPE[0].length * cellSize;
+        this.canvas.height = CAT_SHAPE.length * cellSize;
 
-        this.gameState = new GameState(initialGrid, pieces);
+        this.gameState = new GameState(CAT_SHAPE, PIECE_VARIANTS);
         this.renderer = new Renderer(this.canvas);
 
         this.setupEventListeners();
+        this.startGame();
     }
 
     private setupEventListeners(): void {
         document.addEventListener('keydown', (e) => this.handleKeyPress(e));
-        this.startButton.addEventListener('click', () => this.startGame());
         this.restartButton.addEventListener('click', () => this.restartGame());
     }
 
     private handleKeyPress(e: KeyboardEvent): void {
-        if (this.gameState.isOver()) return; // Ignore input if game is over
-
         switch (e.key) {
             case 'ArrowLeft':
                 this.gameState.movePiece(-1, 0);
@@ -63,32 +55,13 @@ class Game {
     private startGame(): void {
         this.uiOverlay.style.display = 'none';
         this.gameState.reset();
-        this.gameLoop();
+        this.render();
     }
 
     private restartGame(): void {
         this.gameState.reset();
         this.restartButton.style.display = 'none';
-        this.gameLoop();
-    }
-
-    private gameLoop(): void {
-        if (this.gameState.isOver()) {
-            this.handleGameOver();
-            return;
-        }
-
-        // Move the piece down
-        if (!this.gameState.movePiece(0, 1)) {
-            this.placePiece();
-        }
         this.render();
-        requestAnimationFrame(() => this.gameLoop());
-    }
-
-    private handleGameOver(): void {
-        this.restartButton.style.display = 'block';
-        this.renderer.renderGameOver();
     }
 
     private placePiece(): void {
