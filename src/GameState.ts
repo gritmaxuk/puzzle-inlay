@@ -1,4 +1,4 @@
-import { Grid, Piece } from './types';
+import { Grid, Piece, CellState } from './types';
 
 export class GameState {
     private grid: Grid;
@@ -11,13 +11,13 @@ export class GameState {
         this.grid = this.createGridFromShape(initialGrid);
         this.pieces = pieces;
         this.currentPiece = null;
-        this.nextPiece = null;
+        this.nextPiece = this.getRandomPiece();
         this.currentPiecePosition = { x: 0, y: 0 };
     }
 
     public reset(): void {
         this.grid = this.createGridFromShape(this.grid);
-        this.currentPiece = this.getRandomPiece();
+        this.currentPiece = null;
         this.nextPiece = this.getRandomPiece();
         this.currentPiecePosition = { x: 0, y: 0 };
     }
@@ -58,44 +58,7 @@ export class GameState {
         return this.pieces[Math.floor(Math.random() * this.pieces.length)];
     }
 
-    public movePiece(dx: number, dy: number): boolean {
-        const newX = this.currentPiecePosition.x + dx;
-        const newY = this.currentPiecePosition.y + dy;
-
-        if (this.canPlacePiece(newX, newY)) {
-            this.currentPiecePosition = { x: newX, y: newY };
-            return true;
-        }
-        return false;
-    }
-
-    public rotatePiece(): void {
-        if (!this.currentPiece) return;
-        const rotatedPiece = this.rotateMatrix(this.currentPiece);
-        if (this.canPlacePiece(this.currentPiecePosition.x, this.currentPiecePosition.y, rotatedPiece)) {
-            this.currentPiece = rotatedPiece;
-        }
-    }
-
-    public placePiece(): boolean {
-        if (!this.currentPiece) return false;
-
-        const { x, y } = this.currentPiecePosition;
-
-        if (this.canPlacePiece(x, y)) {
-            for (let i = 0; i < this.currentPiece.length; i++) {
-                for (let j = 0; j < this.currentPiece[i].length; j++) {
-                    if (this.currentPiece[i][j] === 1) {
-                        this.grid[y + i][x + j] = 1;
-                    }
-                }
-            }
-            return true;
-        }
-        return false;
-    }
-
-    private canPlacePiece(x: number, y: number, piece: Piece = this.currentPiece!): boolean {
+    public canPlacePiece(x: number, y: number, piece: Piece = this.currentPiece!): boolean {
         if (!piece) return false;
 
         for (let i = 0; i < piece.length; i++) {
@@ -108,7 +71,7 @@ export class GameState {
                         return false;
                     }
 
-                    if (this.grid[gridY][gridX] === 1) {
+                    if (this.grid[gridY][gridX] !== 1) { // Ensure the piece can only be placed on gray cells
                         return false;
                     }
                 }
@@ -117,11 +80,20 @@ export class GameState {
         return true;
     }
 
-    private rotateMatrix(matrix: Piece): Piece {
-        const N = matrix.length;
-        const rotated = matrix.map((row, i) =>
-            row.map((val, j) => matrix[N - 1 - j][i])
-        );
-        return rotated;
+    public placePiece(x: number, y: number): boolean {
+        if (!this.nextPiece) return false;
+
+        if (this.canPlacePiece(x, y, this.nextPiece)) {
+            for (let i = 0; i < this.nextPiece.length; i++) {
+                for (let j = 0; j < this.nextPiece[i].length; j++) {
+                    if (this.nextPiece[i][j] === 1) {
+                        this.grid[y + i][x + j] = 2; // Mark the cell as occupied (blue)
+                    }
+                }
+            }
+            this.nextPiece = this.getRandomPiece();
+            return true;
+        }
+        return false;
     }
 }

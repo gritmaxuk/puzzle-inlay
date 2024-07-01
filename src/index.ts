@@ -6,11 +6,15 @@ class Game {
     private gameState: GameState;
     private renderer: Renderer;
     private canvas: HTMLCanvasElement;
+    private smallCanvas: HTMLCanvasElement;
     private uiOverlay: HTMLElement;
     private restartButton: HTMLButtonElement;
+    private draggingPiece: boolean = false;
+    private dragOffset: { x: number, y: number } = { x: 0, y: 0 };
 
-    constructor(canvasId: string) {
+    constructor(canvasId: string, smallCanvasId: string) {
         this.canvas = document.getElementById(canvasId) as HTMLCanvasElement;
+        this.smallCanvas = document.getElementById(smallCanvasId) as HTMLCanvasElement;
         this.uiOverlay = document.getElementById('uiOverlay') as HTMLElement;
         this.restartButton = document.getElementById('restartButton') as HTMLButtonElement;
 
@@ -20,36 +24,17 @@ class Game {
         this.canvas.height = CAT_SHAPE.length * cellSize;
 
         this.gameState = new GameState(CAT_SHAPE, PIECE_VARIANTS);
-        this.renderer = new Renderer(this.canvas);
+        this.renderer = new Renderer(this.canvas, this.smallCanvas);
 
         this.setupEventListeners();
         this.startGame();
     }
 
     private setupEventListeners(): void {
-        document.addEventListener('keydown', (e) => this.handleKeyPress(e));
         this.restartButton.addEventListener('click', () => this.restartGame());
-    }
-
-    private handleKeyPress(e: KeyboardEvent): void {
-        switch (e.key) {
-            case 'ArrowLeft':
-                this.gameState.movePiece(-1, 0);
-                break;
-            case 'ArrowRight':
-                this.gameState.movePiece(1, 0);
-                break;
-            case 'ArrowDown':
-                this.gameState.movePiece(0, 1);
-                break;
-            case 'ArrowUp':
-                this.gameState.rotatePiece();
-                break;
-            case ' ':
-                this.placePiece();
-                break;
-        }
-        this.render();
+        this.smallCanvas.addEventListener('mousedown', (e) => this.startDrag(e));
+        document.addEventListener('mousemove', (e) => this.handleDrag(e));
+        document.addEventListener('mouseup', (e) => this.endDrag(e));
     }
 
     private startGame(): void {
@@ -65,17 +50,45 @@ class Game {
     }
 
     private placePiece(): void {
-        if (this.gameState.placePiece()) {
-            this.gameState.setCurrentPiece(this.gameState.getNextPiece()!);
-            this.gameState.setNextPiece(this.gameState.getRandomPiece());
-            this.gameState.setCurrentPiecePosition(0, 0);
+        const { x, y } = this.dragOffset;
+        const cellX = Math.floor(x / 30);
+        const cellY = Math.floor(y / 30);
+
+        if (this.gameState.placePiece(cellX, cellY)) {
+            this.draggingPiece = false;
+            this.render();
         }
     }
 
     private render(): void {
         this.renderer.render(this.gameState);
     }
+
+    private startDrag(e: MouseEvent): void {
+        const rect = this.smallCanvas.getBoundingClientRect();
+        this.dragOffset = {
+            x: e.clientX - rect.left,
+            y: e.clientY - rect.top,
+        };
+        this.draggingPiece = true;
+    }
+
+    private handleDrag(e: MouseEvent): void {
+        if (!this.draggingPiece) return;
+
+        const rect = this.canvas.getBoundingClientRect();
+        this.dragOffset = {
+            x: e.clientX - rect.left,
+            y: e.clientY - rect.top,
+        };
+    }
+
+    private endDrag(e: MouseEvent): void {
+        if (this.draggingPiece) {
+            this.placePiece();
+        }
+    }
 }
 
 // Start the game
-new Game('gameCanvas');
+new Game('gameCanvas', 'smallBoardCanvas');
