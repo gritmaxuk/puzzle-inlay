@@ -19,6 +19,16 @@ export class Renderer {
         this.renderNextPiece(gameState.getNextPiece());
     }
 
+    public renderGameOver(): void {
+        this.ctx.fillStyle = 'rgba(0, 0, 0, 0.5)';
+        this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+
+        this.ctx.fillStyle = 'white';
+        this.ctx.font = '48px Arial';
+        this.ctx.textAlign = 'center';
+        this.ctx.fillText('Game Over!', this.canvas.width / 2, this.canvas.height / 2);
+    }
+    
     private clear(): void {
         this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
     }

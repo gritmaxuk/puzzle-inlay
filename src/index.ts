@@ -13,15 +13,15 @@ class Game {
         
         const initialGrid: Grid = parseBoardFromFile(fileContent);
         const pieces: Piece[] = parsePiecesFromFile(fileContent);
-    
+
         // Set canvas size based on grid dimensions
         const cellSize = 40; // Should match the cellSize in Renderer
         this.canvas.width = initialGrid[0].length * cellSize;
         this.canvas.height = initialGrid.length * cellSize;
-    
+
         this.gameState = new GameState(initialGrid, pieces);
         this.renderer = new Renderer(this.canvas);
-    
+
         this.setupEventListeners();
         this.startGame();
     }
@@ -31,6 +31,8 @@ class Game {
     }
 
     private handleKeyPress(e: KeyboardEvent): void {
+        if (this.gameState.isOver()) return; // Ignore input if game is over
+
         switch (e.key) {
             case 'ArrowLeft':
                 this.gameState.movePiece(-1, 0);
@@ -53,7 +55,7 @@ class Game {
 
     private placePiece(): void {
         if (this.gameState.placePiece()) {
-            this.gameState.setCurrentPiece(this.gameState.getRandomPiece());
+            this.gameState.setCurrentPiece(this.gameState.getNextPiece()!);
             this.gameState.setNextPiece(this.gameState.getRandomPiece());
             this.gameState.setCurrentPiecePosition(0, 0);
         }
@@ -68,12 +70,23 @@ class Game {
     }
 
     private gameLoop(): void {
+        if (this.gameState.isOver()) {
+            this.handleGameOver();
+            return;
+        }
+
         // Move the piece down
         if (!this.gameState.movePiece(0, 1)) {
             this.placePiece();
         }
         this.render();
         setTimeout(() => this.gameLoop(), 1000); // Move down every second
+    }
+
+    private handleGameOver(): void {
+        console.log('Game Over!');
+        // You can add more game over handling here, like showing a message on the canvas
+        this.renderer.renderGameOver();
     }
 
     private render(): void {

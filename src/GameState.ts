@@ -6,6 +6,7 @@ export class GameState {
     private currentPiece: Piece | null;
     private nextPiece: Piece | null;
     private currentPiecePosition: { x: number, y: number };
+    private isGameOver: boolean;
 
     constructor(initialGrid: Grid, pieces: Piece[]) {
         this.grid = initialGrid;
@@ -13,6 +14,7 @@ export class GameState {
         this.currentPiece = null;
         this.nextPiece = null;
         this.currentPiecePosition = { x: 0, y: 0 };
+        this.isGameOver = false;
     }
 
     public getGrid(): Grid {
@@ -67,6 +69,24 @@ export class GameState {
         }
     }
 
+    public isOver(): boolean {
+        return this.isGameOver;
+    }
+
+    public checkGameOver(): void {
+        if (!this.currentPiece) return;
+
+        // Check if the current piece can be placed at the top of the grid
+        for (let x = 0; x <= this.grid[0].length - this.currentPiece[0].length; x++) {
+            if (this.canPlacePiece(x, 0)) {
+                return; // If the piece can be placed, the game is not over
+            }
+        }
+
+        // If we can't place the current piece at the top, the game is over
+        this.isGameOver = true;
+    }
+
     public placePiece(): boolean {
         if (!this.currentPiece) return false;
 
@@ -80,6 +100,7 @@ export class GameState {
                     }
                 }
             }
+            this.checkGameOver(); // Check for game over after placing a piece
             return true;
         }
         return false;
