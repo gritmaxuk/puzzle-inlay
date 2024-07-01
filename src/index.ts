@@ -13,10 +13,15 @@ class Game {
         
         const initialGrid: Grid = parseBoardFromFile(fileContent);
         const pieces: Piece[] = parsePiecesFromFile(fileContent);
-
+    
+        // Set canvas size based on grid dimensions
+        const cellSize = 40; // Should match the cellSize in Renderer
+        this.canvas.width = initialGrid[0].length * cellSize;
+        this.canvas.height = initialGrid.length * cellSize;
+    
         this.gameState = new GameState(initialGrid, pieces);
         this.renderer = new Renderer(this.canvas);
-
+    
         this.setupEventListeners();
         this.startGame();
     }

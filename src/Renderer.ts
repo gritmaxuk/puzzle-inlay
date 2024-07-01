@@ -28,6 +28,8 @@ export class Renderer {
             for (let x = 0; x < grid[y].length; x++) {
                 if (grid[y][x] === 1) {
                     this.drawTriangle(x, y, 'blue');
+                } else {
+                    this.drawTriangle(x, y, 'lightgray', true);
                 }
             }
         }
@@ -62,6 +64,7 @@ export class Renderer {
                         (startX / this.cellSize) + x,
                         (startY / this.cellSize) + y,
                         'purple',
+                        false,
                         this.cellSize / 2
                     );
                 }
@@ -69,19 +72,31 @@ export class Renderer {
         }
     }
 
-    private drawTriangle(x: number, y: number, color: string, size: number = this.cellSize): void {
+    private drawTriangle(x: number, y: number, color: string, outline: boolean = false, size: number = this.cellSize): void {
         const centerX = x * size + size / 2;
         const centerY = y * size + size / 2;
+        const direction = (x + y) % 2 === 0 ? 1 : -1; // Alternate direction
 
         this.ctx.fillStyle = color;
         this.ctx.beginPath();
-        this.ctx.moveTo(centerX, centerY - size / 2);
-        this.ctx.lineTo(centerX - size / 2, centerY + size / 2);
-        this.ctx.lineTo(centerX + size / 2, centerY + size / 2);
+        if (direction === 1) {
+            // Pointing up
+            this.ctx.moveTo(centerX, centerY - size / 2);
+            this.ctx.lineTo(centerX - size / 2, centerY + size / 2);
+            this.ctx.lineTo(centerX + size / 2, centerY + size / 2);
+        } else {
+            // Pointing down
+            this.ctx.moveTo(centerX, centerY + size / 2);
+            this.ctx.lineTo(centerX - size / 2, centerY - size / 2);
+            this.ctx.lineTo(centerX + size / 2, centerY - size / 2);
+        }
         this.ctx.closePath();
-        this.ctx.fill();
 
-        this.ctx.strokeStyle = 'black';
-        this.ctx.stroke();
+        if (outline) {
+            this.ctx.strokeStyle = color;
+            this.ctx.stroke();
+        } else {
+            this.ctx.fill();
+        }
     }
 }
