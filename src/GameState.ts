@@ -27,16 +27,16 @@ export class GameState {
         return this.nextPiece;
     }
 
-    public setNextPiece(piece: Piece): void {
-        this.nextPiece = piece;
-    }
-
     public getCurrentPiecePosition(): { x: number, y: number } {
         return this.currentPiecePosition;
     }
 
     public setCurrentPiece(piece: Piece): void {
         this.currentPiece = piece;
+    }
+
+    public setNextPiece(piece: Piece): void {
+        this.nextPiece = piece;
     }
 
     public setCurrentPiecePosition(x: number, y: number): void {
@@ -61,16 +61,7 @@ export class GameState {
     public rotatePiece(): void {
         if (!this.currentPiece) return;
 
-        const rows = this.currentPiece.length;
-        const cols = this.currentPiece[0].length;
-        const rotated: Piece = Array(cols).fill(0).map(() => Array(rows).fill(0));
-
-        for (let i = 0; i < rows; i++) {
-            for (let j = 0; j < cols; j++) {
-                rotated[j][rows - 1 - i] = this.currentPiece[i][j];
-            }
-        }
-
+        const rotated = this.rotateMatrix(this.currentPiece);
         if (this.canPlacePiece(this.currentPiecePosition.x, this.currentPiecePosition.y, rotated)) {
             this.currentPiece = rotated;
         }
@@ -102,15 +93,32 @@ export class GameState {
                 if (piece[i][j] === 1) {
                     const gridY = y + i;
                     const gridX = x + j;
-                    if (gridY >= this.grid.length || gridX >= this.grid[0].length || gridX < 0 || gridY < 0) {
-                        return false; // Out of bounds
+                    
+                    // Check if out of bounds
+                    if (gridY < 0 || gridY >= this.grid.length || gridX < 0 || gridX >= this.grid[0].length) {
+                        return false;
                     }
+                    
+                    // Check if cell is already occupied
                     if (this.grid[gridY][gridX] === 1) {
-                        return false; // Collision with existing piece
+                        return false;
+                    }
+                    
+                    // Check if the triangle orientation matches
+                    if ((gridX + gridY) % 2 !== (x + y) % 2) {
+                        return false;
                     }
                 }
             }
         }
         return true;
+    }
+
+    private rotateMatrix(matrix: Piece): Piece {
+        const N = matrix.length;
+        const rotated = matrix.map((row, i) => 
+            row.map((val, j) => matrix[N - 1 - j][i])
+        );
+        return rotated;
     }
 }
