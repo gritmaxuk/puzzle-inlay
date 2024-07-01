@@ -1,7 +1,7 @@
 import { GameState } from './GameState';
 import { Renderer } from './Renderer';
 import { Grid, Piece } from './types';
-import { parseBoardFromFile, parsePiecesFromFile } from './BoardParser';
+import { parseBoard, parsePieces } from './BoardParser';
 
 class Game {
     private gameState: GameState;
@@ -11,14 +11,14 @@ class Game {
     private startButton: HTMLButtonElement;
     private restartButton: HTMLButtonElement;
 
-    constructor(canvasId: string, fileContent: string) {
+    constructor(canvasId: string) {
         this.canvas = document.getElementById(canvasId) as HTMLCanvasElement;
         this.uiOverlay = document.getElementById('uiOverlay') as HTMLElement;
         this.startButton = document.getElementById('startButton') as HTMLButtonElement;
         this.restartButton = document.getElementById('restartButton') as HTMLButtonElement;
         
-        const initialGrid: Grid = parseBoardFromFile(fileContent);
-        const pieces: Piece[] = parsePiecesFromFile(fileContent);
+        const initialGrid: Grid = parseBoard();
+        const pieces: Piece[] = parsePieces();
 
         // Set canvas size based on grid dimensions
         const cellSize = 40; // Should match the cellSize in Renderer
@@ -105,9 +105,4 @@ class Game {
 }
 
 // Start the game
-fetch('cat.txt')
-    .then(response => response.text())
-    .then(fileContent => {
-        new Game('gameCanvas', fileContent);
-    })
-    .catch(error => console.error('Error loading cat.txt:', error));
+new Game('gameCanvas');

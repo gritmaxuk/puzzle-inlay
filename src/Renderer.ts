@@ -1,5 +1,6 @@
 import { GameState } from './GameState';
 import { Grid, Piece } from './types';
+import { CAT_SHAPE } from './gameData';
 
 export class Renderer {
     private canvas: HTMLCanvasElement;
@@ -14,6 +15,7 @@ export class Renderer {
 
     public render(gameState: GameState): void {
         this.clear();
+        this.renderBoard();
         this.renderGrid(gameState.getGrid());
         this.renderCurrentPiece(gameState.getCurrentPiece(), gameState.getCurrentPiecePosition());
         this.renderNextPiece(gameState.getNextPiece());
@@ -28,18 +30,26 @@ export class Renderer {
         this.ctx.textAlign = 'center';
         this.ctx.fillText('Game Over!', this.canvas.width / 2, this.canvas.height / 2);
     }
-    
+
     private clear(): void {
         this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+    }
+
+    private renderBoard(): void {
+        for (let y = 0; y < CAT_SHAPE.length; y++) {
+            for (let x = 0; x < CAT_SHAPE[y].length; x++) {
+                if (CAT_SHAPE[y][x] === 1) {
+                    this.drawTriangle(x, y, '#e0e0e0', this.isTriangleBaseDown(x, y));
+                }
+            }
+        }
     }
 
     private renderGrid(grid: Grid): void {
         for (let y = 0; y < grid.length; y++) {
             for (let x = 0; x < grid[y].length; x++) {
                 if (grid[y][x] === 1) {
-                    this.drawRectangle(x, y, 'gray');
-                } else {
-                    this.drawRectangle(x, y, 'lightgray', true);
+                    this.drawTriangle(x, y, 'gray', this.isTriangleBaseDown(x, y));
                 }
             }
         }
@@ -51,7 +61,7 @@ export class Renderer {
         for (let y = 0; y < piece.length; y++) {
             for (let x = 0; x < piece[y].length; x++) {
                 if (piece[y][x] === 1) {
-                    this.drawRectangle(position.x + x, position.y + y, 'blue');
+                    this.drawTriangle(position.x + x, position.y + y, 'blue', this.isTriangleBaseDown(position.x + x, position.y + y));
                 }
             }
         }
@@ -70,11 +80,13 @@ export class Renderer {
         for (let y = 0; y < piece.length; y++) {
             for (let x = 0; x < piece[y].length; x++) {
                 if (piece[y][x] === 1) {
-                    this.drawRectangle(
-                        (startX / this.cellSize) + x,
-                        (startY / this.cellSize) + y,
+                    const pieceX = Math.floor(startX / this.cellSize) + x;
+                    const pieceY = Math.floor(startY / this.cellSize) + y;
+                    this.drawTriangle(
+                        pieceX,
+                        pieceY,
                         'blue',
-                        false,
+                        this.isTriangleBaseDown(pieceX, pieceY),
                         this.cellSize / 2
                     );
                 }
@@ -82,16 +94,36 @@ export class Renderer {
         }
     }
 
-    private drawRectangle(x: number, y: number, color: string, outline: boolean = false, size: number = this.cellSize): void {
-        const rectX = x * size;
-        const rectY = y * size;
+    private isTriangleBaseDown(x: number, y: number): boolean {
+        return (y % 2 === 0) ? (x % 2 === 1) : (x % 2 === 0);
+    }
 
-        if (outline) {
-            this.ctx.strokeStyle = color;
-            this.ctx.strokeRect(rectX, rectY, size, size);
+    private drawTriangle(x: number, y: number, color: string, isBaseDown: boolean, size: number = this.cellSize): void {
+        const leftX = x * size;
+        const rightX = (x + 1) * size;
+        const topY = y * size;
+        const bottomY = (y + 1) * size;
+
+        this.ctx.fillStyle = color;
+        this.ctx.beginPath();
+
+        if (isBaseDown) {
+            // Triangle with base down
+            this.ctx.moveTo(leftX, topY);
+            this.ctx.lineTo(rightX, topY);
+            this.ctx.lineTo((leftX + rightX) / 2, bottomY);
         } else {
-            this.ctx.fillStyle = color;
-            this.ctx.fillRect(rectX, rectY, size, size);
+            // Triangle with base up
+            this.ctx.moveTo(leftX, bottomY);
+            this.ctx.lineTo(rightX, bottomY);
+            this.ctx.lineTo((leftX + rightX) / 2, topY);
         }
+
+        this.ctx.closePath();
+        this.ctx.fill();
+
+        // Draw triangle outline
+        this.ctx.strokeStyle = 'black';
+        this.ctx.stroke();
     }
 }

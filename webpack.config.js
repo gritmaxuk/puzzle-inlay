@@ -27,12 +27,7 @@ module.exports = {
   plugins: [
     new HtmlWebpackPlugin({
       template: 'src/index.html',
-    }),
-    new CopyWebpackPlugin({
-      patterns: [
-        { from: 'src/cat.txt', to: 'cat.txt' },
-      ],
-    }),
+    })
   ],
   devServer: {
     static: path.join(__dirname, "dist"),
