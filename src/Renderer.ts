@@ -6,12 +6,16 @@ export class Renderer {
     private ctx: CanvasRenderingContext2D;
     private smallCanvas: HTMLCanvasElement;
     private smallCtx: CanvasRenderingContext2D;
+    private cellSize: number;
+    private smallBoardSize: number;
 
-    constructor(canvas: HTMLCanvasElement, smallCanvas: HTMLCanvasElement) {
+    constructor(canvas: HTMLCanvasElement, smallCanvas: HTMLCanvasElement, cellSize: number, smallBoardSize: number) {
         this.canvas = canvas;
         this.ctx = canvas.getContext('2d')!;
         this.smallCanvas = smallCanvas;
         this.smallCtx = smallCanvas.getContext('2d')!;
+        this.cellSize = cellSize;
+        this.smallBoardSize = smallBoardSize;
     }
 
     render(gameState: GameState, draggingPiece?: Piece, dragOffset?: { x: number, y: number }) {
@@ -22,12 +26,12 @@ export class Renderer {
         grid.forEach((row, y) => {
             row.forEach((cell, x) => {
                 this.ctx.fillStyle = cell === 1 ? '#808080' : (cell === 2 ? '#0000FF' : '#FFFFFF'); // Gray for 1, Blue for 2, White for 0
-                this.ctx.fillRect(x * 30, y * 30, 30, 30);
+                this.ctx.fillRect(x * this.cellSize, y * this.cellSize, this.cellSize, this.cellSize);
 
                 // Draw border
                 this.ctx.strokeStyle = '#000000';
                 this.ctx.lineWidth = 2;
-                this.ctx.strokeRect(x * 30, y * 30, 30, 30);
+                this.ctx.strokeRect(x * this.cellSize, y * this.cellSize, this.cellSize, this.cellSize);
             });
         });
 
@@ -41,15 +45,20 @@ export class Renderer {
     private renderSmallBoard(piece: Piece) {
         this.smallCtx.clearRect(0, 0, this.smallCanvas.width, this.smallCanvas.height);
 
+        const rows = piece.length;
+        const cols = piece[0].length;
+        const maxDimension = Math.max(rows, cols);
+        const scaledCellSize = this.smallBoardSize / maxDimension;
+
         piece.forEach((row, y) => {
             row.forEach((cell, x) => {
                 this.smallCtx.fillStyle = cell === 1 ? '#FF0000' : '#FFFFFF'; // Red for 1, White for 0
-                this.smallCtx.fillRect(x * 30, y * 30, 30, 30);
+                this.smallCtx.fillRect(x * scaledCellSize, y * scaledCellSize, scaledCellSize, scaledCellSize);
 
                 // Draw border
                 this.smallCtx.strokeStyle = '#000000';
                 this.smallCtx.lineWidth = 2;
-                this.smallCtx.strokeRect(x * 30, y * 30, 30, 30);
+                this.smallCtx.strokeRect(x * scaledCellSize, y * scaledCellSize, scaledCellSize, scaledCellSize);
             });
         });
     }
@@ -59,12 +68,12 @@ export class Renderer {
             row.forEach((cell, x) => {
                 if (cell === 1) {
                     this.ctx.fillStyle = '#FF0000'; // Red for dragging piece
-                    this.ctx.fillRect(offset.x + x * 30, offset.y + y * 30, 30, 30);
+                    this.ctx.fillRect(offset.x + x * this.cellSize, offset.y + y * this.cellSize, this.cellSize, this.cellSize);
 
                     // Draw border
                     this.ctx.strokeStyle = '#000000';
                     this.ctx.lineWidth = 2;
-                    this.ctx.strokeRect(offset.x + x * 30, offset.y + y * 30, 30, 30);
+                    this.ctx.strokeRect(offset.x + x * this.cellSize, offset.y + y * this.cellSize, this.cellSize, this.cellSize);
                 }
             });
         });
